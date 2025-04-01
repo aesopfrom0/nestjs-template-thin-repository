@@ -1,0 +1,24 @@
+-- CreateTable
+CREATE TABLE `Hello` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `message` VARCHAR(191) NOT NULL DEFAULT '안녕하세요!',
+    `mood` ENUM('HAPPY', 'EXCITED', 'SLEEPY', 'HUNGRY') NOT NULL DEFAULT 'HAPPY',
+    `timestamp` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Bye` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `message` VARCHAR(191) NOT NULL DEFAULT '안녕히 가세요!',
+    `mood` ENUM('HAPPY', 'EXCITED', 'SLEEPY', 'HUNGRY') NOT NULL DEFAULT 'EXCITED',
+    `waveCount` INTEGER NOT NULL DEFAULT 1,
+    `helloId` INTEGER NOT NULL,
+
+    INDEX `Bye_helloId_idx`(`helloId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- AddForeignKey
+ALTER TABLE `Bye` ADD CONSTRAINT `Bye_helloId_fkey` FOREIGN KEY (`helloId`) REFERENCES `Hello`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
