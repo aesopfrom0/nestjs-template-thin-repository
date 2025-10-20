@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsObject } from 'class-validator';
 import { SortOrder } from 'src/common/constant/sort-order';
 
-export class PaginationQueryDto {
+export class PaginationQuery {
   @IsOptional()
   @Transform(({ value }) => {
     if (value === null || value === undefined) return value;

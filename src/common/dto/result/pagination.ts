@@ -1,4 +1,4 @@
-export class PaginationResponseDto<T> {
+export class PaginationResult<T> {
   items: T[];
   pagination: {
     totalCount: number;

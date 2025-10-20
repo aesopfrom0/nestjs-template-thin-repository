@@ -1,11 +1,11 @@
 import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { CommonResponseDto } from 'src/common/dto/response/common-response.dto';
+import { CommonResult } from 'src/common/dto/result/common';
 
 @Injectable()
-export class TransformResponseInterceptor<T> implements NestInterceptor<T, CommonResponseDto<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<CommonResponseDto<T>> {
+export class TransformResponseInterceptor<T> implements NestInterceptor<T, CommonResult<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<CommonResult<T>> {
     const http = context.switchToHttp();
     const response = http.getResponse();
 
@@ -21,7 +21,7 @@ export class TransformResponseInterceptor<T> implements NestInterceptor<T, Commo
         return {
           data: data,
           statusCode: statusCode,
-        } as CommonResponseDto<T>;
+        } as CommonResult<T>;
       }),
     );
   }

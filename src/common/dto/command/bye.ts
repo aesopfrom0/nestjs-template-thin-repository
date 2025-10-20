@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsEnum, IsNumber } from 'class-validator';
 import { MoodType } from '@prisma/client';
 
-export class ByeRequestDto {
+export class CreateBye {
   @IsOptional()
   @IsString()
   message?: string;

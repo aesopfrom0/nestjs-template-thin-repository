@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/provider/database/prisma.service';
 import { Prisma } from '@prisma/client';
-import { HelloQueryDto } from 'src/common/dto/query/hello-query.dto';
-import { ByeRequestDto } from 'src/common/dto/request/bye-request.dto';
-import { HelloResponseDto } from 'src/common/dto/response/hello-response.dto';
-import { PaginationResponseDto } from 'src/common/dto/response/pagination-response.dto';
-import {
-  CreateHelloRequestDto,
-  UpdateHelloRequestDto,
-} from 'src/common/dto/request/hello-request.dto';
+import { HelloQuery } from 'src/common/dto/query/hello';
+import { CreateBye } from 'src/common/dto/command/bye';
+import { HelloResult } from 'src/common/dto/result/hello';
+import { PaginationResult } from 'src/common/dto/result/pagination';
+import { CreateHello, UpdateHello } from 'src/common/dto/command/hello';
+import { HelloMapper } from 'src/domain/hello/mapper/hello.mapper';
 
+/**
+ * HelloRepository - Thin Repository Pattern
+ *
+ * 역할:
+ * - 데이터베이스 CRUD 작업만 수행
+ * - Prisma ORM과의 인터페이스 역할
+ * - 비즈니스 로직은 포함하지 않음 (Service Layer에서 처리)
+ *
+ * 원칙:
+ * - 단순한 쿼리 실행
+ * - 데이터 변환 최소화
+ * - 비즈니스 규칙 검증 없음
+ */
 @Injectable()
 export class HelloRepository {
   constructor(private prisma: PrismaService) {}
 
-  async create(data: CreateHelloRequestDto) {
-    return this.prisma.hello.create({
+  async create(data: CreateHello): Promise<HelloResult> {
+    const hello = await this.prisma.hello.create({
       data,
+      include: {
+        byes: true,
+      },
     });
+
+    return HelloMapper.toResult(hello);
   }
 
-  async findAll(queryDto: HelloQueryDto = {}): Promise<PaginationResponseDto<HelloResponseDto>> {
+  async findAll(queryDto: HelloQuery = {}): Promise<PaginationResult<HelloResult>> {
     // 기본 조건
     const where: Prisma.HelloWhereInput = {};
     const { ids, message, moodTypes, skip, take, orderBy } = queryDto;
@@ -46,7 +62,7 @@ export class HelloRepository {
     }
 
     // 결과 및 총 개수 동시에 조회
-    const [items, totalCount] = await Promise.all([
+    const [hellos, totalCount] = await Promise.all([
       this.prisma.hello.findMany({
         where,
         skip: skip !== undefined ? skip : undefined,
@@ -58,6 +74,9 @@ export class HelloRepository {
       }),
       this.prisma.hello.count({ where }),
     ]);
+
+    // Mapper를 사용하여 변환
+    const items = HelloMapper.toResultArray(hellos);
 
     const currentPage = skip / take + 1;
     const totalPages = Math.ceil(totalCount / take);
@@ -77,16 +96,18 @@ export class HelloRepository {
     };
   }
 
-  async findById(id: number): Promise<HelloResponseDto> {
-    return this.prisma.hello.findUnique({
+  async findById(id: number): Promise<HelloResult> {
+    const hello = await this.prisma.hello.findUnique({
       where: { id },
       include: {
         byes: true,
       },
     });
+
+    return hello ? HelloMapper.toResult(hello) : null;
   }
 
-  async findOne(queryDto: HelloQueryDto = {}): Promise<HelloResponseDto> {
+  async findOne(queryDto: HelloQuery = {}): Promise<HelloResult> {
     // 기본 조건
     const where: Prisma.HelloWhereInput = {};
 
@@ -96,19 +117,26 @@ export class HelloRepository {
     if (message) where.message = { contains: message };
     if (moodTypes?.length) where.mood = { in: moodTypes };
 
-    return this.prisma.hello.findFirst({
+    const hello = await this.prisma.hello.findFirst({
       where,
       include: {
         byes: true,
       },
     });
+
+    return hello ? HelloMapper.toResult(hello) : null;
   }
 
-  async update(id: number, data: UpdateHelloRequestDto) {
-    return this.prisma.hello.update({
+  async update(id: number, data: UpdateHello): Promise<HelloResult> {
+    const hello = await this.prisma.hello.update({
       where: { id },
       data,
+      include: {
+        byes: true,
+      },
     });
+
+    return HelloMapper.toResult(hello);
   }
 
   async delete(id: number) {
@@ -117,8 +145,8 @@ export class HelloRepository {
     });
   }
 
-  async createBye(helloId: number, data: ByeRequestDto) {
-    return this.prisma.bye.create({
+  async createBye(helloId: number, data: CreateBye) {
+    const bye = await this.prisma.bye.create({
       data: {
         ...data,
         hello: {
@@ -126,5 +154,7 @@ export class HelloRepository {
         },
       },
     });
+
+    return HelloMapper.byeToResult(bye);
   }
 }

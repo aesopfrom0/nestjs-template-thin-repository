@@ -1,7 +1,7 @@
-import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsString, IsEnum, IsOptional } from 'class-validator';
 import { MoodType } from '@prisma/client';
 
-export class CreateHelloRequestDto {
+export class CreateHello {
   @IsString()
   message: string;
 
@@ -9,7 +9,7 @@ export class CreateHelloRequestDto {
   mood: MoodType;
 }
 
-export class UpdateHelloRequestDto {
+export class UpdateHello {
   @IsOptional()
   @IsString()
   message?: string;

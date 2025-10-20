@@ -1,4 +1,4 @@
-export class CommonResponseDto<T> {
+export class CommonResult<T> {
   statusCode: number;
   data: T;
   message?: string;
